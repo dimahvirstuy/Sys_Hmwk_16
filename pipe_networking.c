@@ -28,5 +28,7 @@ int server_handshake(int *to_client) {
   =========================*/
 int client_handshake(int *to_server) {
   mkfifo(PRIVATE_PIPE, 0666);
+  fd = open(WKP, O_WRONLY);
+  write(fd, PRIVATE_PIPE, 
   return 0;
 }
