@@ -12,8 +12,21 @@
   returns the file descriptor for the upstream pipe.
   =========================*/
 int server_handshake(int *to_client) {
+  int fd;
+  int fd2;
   mkfifo(WKP, 0666);
-  
+  fd = open(WKP, O_RDONLY);
+  char private_pipe[80];
+  read(fd, private_pipe, sizeof(private_pipe));
+  mkfifo(private_pipe, 0666);
+  fd2 = open(private_pipe, O_WRONLY);
+  char conf[20] = "confirmation";
+  write(fd2, conf, sizeof(conf));
+  char second_conf_recieved[30];
+  read(fd, second_conf_recieved, sizeof(second_conf_recieved));
+  printf("Connection established! Handshake complete\n");
+  close(fd);
+  close(fd2);
 }
 
 
@@ -27,8 +40,18 @@ int server_handshake(int *to_client) {
   returns the file descriptor for the downstream pipe.
   =========================*/
 int client_handshake(int *to_server) {
+  int fd;
+  int fd2;
   mkfifo(PRIVATE_PIPE, 0666);
   fd = open(WKP, O_WRONLY);
-  write(fd, PRIVATE_PIPE, 
+  write(fd, PRIVATE_PIPE, sizeof(PRIVATE_PIPE));
+  fd2 = open(PRIVATE_PIPE, O_RDONLY);
+  char first_conf_recieved[30];
+  read(fd2, first_conf_recieved, sizeof(first_conf_recieved));
+  printf("confirmation message recieved! ... sending confirmation message\n");
+  char second_conf[30] = "recieved confirmation";
+  write(fd, second_conf, sizeof(second_conf));
+  close(fd);
+  close(fd2);  
   return 0;
 }
